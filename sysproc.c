@@ -13,6 +13,7 @@ sys_fork(void)
   return fork();
 }
 
+
 int
 sys_exit(void)
 {
@@ -61,7 +62,7 @@ sys_sleep(void)
 {
   int n;
   uint ticks0;
-  
+
   if(argint(0, &n) < 0)
     return -1;
   acquire(&tickslock);
@@ -83,7 +84,7 @@ int
 sys_uptime(void)
 {
   uint xticks;
-  
+
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
@@ -101,6 +102,20 @@ sys_halt(void)
   for( ; *p; p++)
     outw(0xB004, 0x2000);
   return 0;
+}
+
+int sys_mprotect(void)
+{
+  int addr,len,prot;
+
+  if(argint(0, &addr) <0)
+    return -1;
+  if(argint(1,&len) <0)
+    return -1;
+  if(argint(2,&len) <0)
+    return -1;
+
+  return mprotect((void*)addr,len,prot);
 }
 
 int sys_signal_register(void)
@@ -127,6 +142,6 @@ int sys_signal_restorer(void)
       return -1;
 
     proc->restorer_addr = (uint) restorer_addr;
-    
+
     return 0;
 }

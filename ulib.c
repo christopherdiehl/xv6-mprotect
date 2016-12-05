@@ -96,7 +96,7 @@ void*
 memmove(void *vdst, void *vsrc, int n)
 {
   char *dst, *src;
-  
+
   dst = vdst;
   src = vsrc;
   while(n-- > 0)
@@ -104,6 +104,7 @@ memmove(void *vdst, void *vsrc, int n)
   return vdst;
 }
 
+//need to change the restorer
 void restorer(void);
 __asm__ ("restorer:\n\t"
             "addl $0x4,%esp\n\t"

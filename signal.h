@@ -3,6 +3,8 @@
 
 #define SIGKILL	0
 #define SIGFPE	1
+#define SIGSEV	1
+
 
 typedef void (*sighandler_t)(int);
 
