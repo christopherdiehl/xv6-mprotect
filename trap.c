@@ -36,6 +36,7 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+  siginfo_t si;
   if(tf->trapno == T_SYSCALL){
     if(proc->killed)
       exit();
@@ -80,15 +81,16 @@ trap(struct trapframe *tf)
 
    case T_DIVIDE:
       if (proc->handlers[SIGFPE] != (sighandler_t) -1) {
-        signal_deliver(SIGFPE);
+        si.type=0;
+        si.addr = rcr2();
+        signal_deliver(SIGFPE,si);
         break;
       }
     //handle pgfault with mem_protect
     case T_PGFLT:
       //create a siginfo_t struct
-      siginfo_t si;
       si.type = tf->err;
-      si.address = rcr2();
+      si.addr = rcr2();
 
       //handle that signal
       signal_deliver(SIGSEV,si);

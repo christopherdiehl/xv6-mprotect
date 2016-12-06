@@ -233,7 +233,7 @@ mprotect(void *addr, int len, int prot)
     *page_table_entry &= prot;  
   }
   //flush that tlb real good
-  lcr3(proc-pgdir);
+  lcr3(*proc->pgdir);
   return 0;
 }
 
