@@ -91,14 +91,15 @@ trap(struct trapframe *tf)
       //create a siginfo_t struct
       if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         int err = tf->err;
-        if(err < 0x4) {
+        if(err == 0x4 || err == 0x6) {
           si.type = PROT_NONE;
-        } else if(err < 0x6) {
+        } else if(err == 0x7) {
           si.type = PROT_READ;
         } else {
           si.type = PROT_WRITE;
         }
         si.addr = rcr2();
+        cprintf("addr: 0x%x\n",si.addr);
         signal_deliver(SIGSEGV,si);
         break;
       }

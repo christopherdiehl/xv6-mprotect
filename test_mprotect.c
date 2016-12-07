@@ -13,6 +13,7 @@ void handler(int signum, siginfo_t info)
 	}
 	else
 	{
+		printf(1,"PROT_READ: 0x%x, PROT_WRITE: 0x%x, PROT_NONE: 0x%x",PROT_READ,PROT_WRITE,PROT_NONE);
 		printf(1, "ERROR: Didn't get proper exception, this should not happen.\n");
 		exit();
 	}

@@ -224,19 +224,19 @@ mprotect(void *addr, int len, int prot)
   //loop through all the page entries that need protection level changed
   for (i = 0; i < len; i++)
   {
-    cprintf("I walk this lonely road, the onlyl one that I have every known for the %dtime\n",i);
     //pass in process pagedir cause that's what we're concerned with
     //now give it addr+i to get address page
     //pass in 0 so it doesn't allocate new tables
     //walk through the physical memory, assigning flags as we go
     page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
     //change the protection flags
+    //set last 3 bits to 1 (flag bits)
+    cprintf("page_table_entry: 0%x\n",*page_table_entry);
+    *page_table_entry |= ((1<<3)-1);
     *page_table_entry &= prot;
   }
   //flush that tlb real good
-  cprintf("About to flush!\n");
   lcr3(v2p(proc->pgdir));
-  cprintf("Made it out of the loop");
   return 0;
 }
 
