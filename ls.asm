@@ -810,156 +810,126 @@ int signal(int signum, void(*handler)(int,siginfo_t))
  5c4:	c3                   	ret    
 
 000005c5 <fork>:
-  name: \
-    movl $SYS_ ## name, %eax; \
-    int $T_SYSCALL; \
-    ret
-
-SYSCALL(fork)
  5c5:	b8 01 00 00 00       	mov    $0x1,%eax
  5ca:	cd 40                	int    $0x40
  5cc:	c3                   	ret    
 
 000005cd <exit>:
-SYSCALL(exit)
  5cd:	b8 02 00 00 00       	mov    $0x2,%eax
  5d2:	cd 40                	int    $0x40
  5d4:	c3                   	ret    
 
 000005d5 <wait>:
-SYSCALL(wait)
  5d5:	b8 03 00 00 00       	mov    $0x3,%eax
  5da:	cd 40                	int    $0x40
  5dc:	c3                   	ret    
 
 000005dd <pipe>:
-SYSCALL(pipe)
  5dd:	b8 04 00 00 00       	mov    $0x4,%eax
  5e2:	cd 40                	int    $0x40
  5e4:	c3                   	ret    
 
 000005e5 <read>:
-SYSCALL(read)
  5e5:	b8 05 00 00 00       	mov    $0x5,%eax
  5ea:	cd 40                	int    $0x40
  5ec:	c3                   	ret    
 
 000005ed <write>:
-SYSCALL(write)
  5ed:	b8 10 00 00 00       	mov    $0x10,%eax
  5f2:	cd 40                	int    $0x40
  5f4:	c3                   	ret    
 
 000005f5 <close>:
-SYSCALL(close)
  5f5:	b8 15 00 00 00       	mov    $0x15,%eax
  5fa:	cd 40                	int    $0x40
  5fc:	c3                   	ret    
 
 000005fd <kill>:
-SYSCALL(kill)
  5fd:	b8 06 00 00 00       	mov    $0x6,%eax
  602:	cd 40                	int    $0x40
  604:	c3                   	ret    
 
 00000605 <exec>:
-SYSCALL(exec)
  605:	b8 07 00 00 00       	mov    $0x7,%eax
  60a:	cd 40                	int    $0x40
  60c:	c3                   	ret    
 
 0000060d <open>:
-SYSCALL(open)
  60d:	b8 0f 00 00 00       	mov    $0xf,%eax
  612:	cd 40                	int    $0x40
  614:	c3                   	ret    
 
 00000615 <mknod>:
-SYSCALL(mknod)
  615:	b8 11 00 00 00       	mov    $0x11,%eax
  61a:	cd 40                	int    $0x40
  61c:	c3                   	ret    
 
 0000061d <unlink>:
-SYSCALL(unlink)
  61d:	b8 12 00 00 00       	mov    $0x12,%eax
  622:	cd 40                	int    $0x40
  624:	c3                   	ret    
 
 00000625 <fstat>:
-SYSCALL(fstat)
  625:	b8 08 00 00 00       	mov    $0x8,%eax
  62a:	cd 40                	int    $0x40
  62c:	c3                   	ret    
 
 0000062d <link>:
-SYSCALL(link)
  62d:	b8 13 00 00 00       	mov    $0x13,%eax
  632:	cd 40                	int    $0x40
  634:	c3                   	ret    
 
 00000635 <mkdir>:
-SYSCALL(mkdir)
  635:	b8 14 00 00 00       	mov    $0x14,%eax
  63a:	cd 40                	int    $0x40
  63c:	c3                   	ret    
 
 0000063d <chdir>:
-SYSCALL(chdir)
  63d:	b8 09 00 00 00       	mov    $0x9,%eax
  642:	cd 40                	int    $0x40
  644:	c3                   	ret    
 
 00000645 <dup>:
-SYSCALL(dup)
  645:	b8 0a 00 00 00       	mov    $0xa,%eax
  64a:	cd 40                	int    $0x40
  64c:	c3                   	ret    
 
 0000064d <getpid>:
-SYSCALL(getpid)
  64d:	b8 0b 00 00 00       	mov    $0xb,%eax
  652:	cd 40                	int    $0x40
  654:	c3                   	ret    
 
 00000655 <sbrk>:
-SYSCALL(sbrk)
  655:	b8 0c 00 00 00       	mov    $0xc,%eax
  65a:	cd 40                	int    $0x40
  65c:	c3                   	ret    
 
 0000065d <sleep>:
-SYSCALL(sleep)
  65d:	b8 0d 00 00 00       	mov    $0xd,%eax
  662:	cd 40                	int    $0x40
  664:	c3                   	ret    
 
 00000665 <uptime>:
-SYSCALL(uptime)
  665:	b8 0e 00 00 00       	mov    $0xe,%eax
  66a:	cd 40                	int    $0x40
  66c:	c3                   	ret    
 
 0000066d <halt>:
-SYSCALL(halt)
  66d:	b8 16 00 00 00       	mov    $0x16,%eax
  672:	cd 40                	int    $0x40
  674:	c3                   	ret    
 
 00000675 <signal_register>:
-SYSCALL(signal_register)
  675:	b8 17 00 00 00       	mov    $0x17,%eax
  67a:	cd 40                	int    $0x40
  67c:	c3                   	ret    
 
 0000067d <signal_restorer>:
-SYSCALL(signal_restorer)
  67d:	b8 18 00 00 00       	mov    $0x18,%eax
  682:	cd 40                	int    $0x40
  684:	c3                   	ret    
 
 00000685 <mprotect>:
-SYSCALL(mprotect)
  685:	b8 19 00 00 00       	mov    $0x19,%eax
  68a:	cd 40                	int    $0x40
  68c:	c3                   	ret    

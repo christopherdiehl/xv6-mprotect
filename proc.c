@@ -476,7 +476,6 @@ procdump(void)
 void signal_deliver(int signum,siginfo_t si)
 {
 	uint old_eip = proc->tf->eip;
-
 	*((uint*)(proc->tf->esp - 4))  = (uint) old_eip;		// real return address
 	*((uint*)(proc->tf->esp - 8))  = proc->tf->eax;			// eax
 	*((uint*)(proc->tf->esp - 12)) = proc->tf->ecx;			// ecx

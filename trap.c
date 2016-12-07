@@ -89,7 +89,7 @@ trap(struct trapframe *tf)
     //handle pgfault with mem_protect
     case T_PGFLT:
       //create a siginfo_t struct
-      cprintf("err : 0x%x\n",tf->err);
+      cprintf(" PAGEFULT !!err : 0x%x\n",tf->err);
 
       if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         int err = tf->err;
@@ -101,7 +101,7 @@ trap(struct trapframe *tf)
           si.type = PROT_WRITE;
         }
         si.addr = rcr2();
-        cprintf("addr: 0x%x\n",si.addr);
+        cprintf(" PAGE FAULT addr: 0x%x\n",si.addr);
         signal_deliver(SIGSEGV,si);
         break;
       }

@@ -219,25 +219,44 @@ int
 mprotect(void *addr, int len, int prot)
 {
   pte_t *page_table_entry;
-  int i = 0;
   //might need to PGRDWN the address
   //loop through all the page entries that need protection level changed
-  for (i = 0; i < len; i++)
-  {
-    //pass in process pagedir cause that's what we're concerned with
-    //now give it addr+i to get address page
-    //pass in 0 so it doesn't allocate new tables
-    //walk through the physical memory, assigning flags as we go
-    //probs overkill but gets job done!
-    page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
-    //change the protection flags
-    //set last 3 bits to 0 (flag bits)
-    *page_table_entry &= 0xfffffff9;
-    *page_table_entry |= prot;
-  }
+  //makes prot cnstants change in types.h
+  //break it down, use PTE
+  uint base_addr = PGROUNDDOWN((uint)addr);
+  uint curr = base_addr;
+  cprintf(" Got to my mprotect!\n");
+  do {
+
+    page_table_entry = walkpgdir(proc->pgdir,(void *)curr ,0);
+    curr += PGSIZE;
+    //clear last 3 bits
+    cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
+
+    // *page_table_entry &= 0xfffffff9;
+    // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
+    switch(prot) {
+      case PROT_NONE: 
+        *page_table_entry &= ~(PTE_U | PTE_W);
+        break;
+      case PROT_READ: //good
+        *page_table_entry &= (~PTE_W |PTE_U);
+        break;
+      case PROT_WRITE:
+        *page_table_entry |= (PTE_P | PTE_W);
+        break;
+      case PROT_READ | PROT_WRITE: //good
+        *page_table_entry |= (PTE_P | PTE_W | PTE_U);
+    }
+    cprintf("page table entry after: 0x%x\n",*page_table_entry);
+
+    //switch on the protection level here
+  } while(curr < ((uint)addr +len));
+
+  cprintf("FLUSHING TLB!\n");
   //flush that tlb real good
   lcr3(v2p(proc->pgdir));
-  return 0;
+  return 0; ///what happens after returned?
 }
 
 // Allocate page tables and physical memory to grow process from oldsz to
