@@ -231,9 +231,9 @@ mprotect(void *addr, int len, int prot)
     page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
     //change the protection flags
     //set last 3 bits to 1 (flag bits)
-    cprintf("page_table_entry: 0%x\n",*page_table_entry);
     *page_table_entry |= ((1<<3)-1);
-    *page_table_entry &= prot;
+    *page_table_entry |= prot;
+
   }
   //flush that tlb real good
   lcr3(v2p(proc->pgdir));
