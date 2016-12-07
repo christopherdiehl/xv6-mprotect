@@ -89,10 +89,11 @@ trap(struct trapframe *tf)
     //handle pgfault with mem_protect
     case T_PGFLT:
       //create a siginfo_t struct
+      cprintf("err : 0x%x\n",tf->err);
+
       if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         int err = tf->err;
-        cprintf("err : 0x%x\n",tf->err);
-        if(err == 0x4 || err == 0x6) {
+        if(err == 0x4 || err == 0x6 || err == 0x5) {
           si.type = PROT_NONE;
         } else if(err == 0x7) {
           si.type = PROT_READ;

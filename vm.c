@@ -228,14 +228,12 @@ mprotect(void *addr, int len, int prot)
     //now give it addr+i to get address page
     //pass in 0 so it doesn't allocate new tables
     //walk through the physical memory, assigning flags as we go
+    //probs overkill but gets job done!
     page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
     //change the protection flags
     //set last 3 bits to 0 (flag bits)
-    cprintf("page table entry pre prot : 0x%x prot = :0x%x\n",*page_table_entry,prot);
     *page_table_entry &= 0xfffffff9;
     *page_table_entry |= prot;
-    cprintf("page table entry post prot : 0x%x\n",*page_table_entry);
-
   }
   //flush that tlb real good
   lcr3(v2p(proc->pgdir));
