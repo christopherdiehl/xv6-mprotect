@@ -91,6 +91,7 @@ trap(struct trapframe *tf)
       //create a siginfo_t struct
       if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         int err = tf->err;
+        cprintf("err : 0x%x\n",tf->err);
         if(err == 0x4 || err == 0x6) {
           si.type = PROT_NONE;
         } else if(err == 0x7) {

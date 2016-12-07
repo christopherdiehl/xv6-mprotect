@@ -230,7 +230,7 @@ mprotect(void *addr, int len, int prot)
     //walk through the physical memory, assigning flags as we go
     page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
     //change the protection flags
-    //set last 3 bits to 1 (flag bits)
+    //set last 3 bits to 0 (flag bits)
     cprintf("page table entry pre prot : 0x%x prot = :0x%x\n",*page_table_entry,prot);
     *page_table_entry &= 0xfffffff9;
     *page_table_entry |= prot;
