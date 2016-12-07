@@ -222,21 +222,23 @@ mprotect(void *addr, int len, int prot)
   int i = 0;
   //might need to PGRDWN the address
   //loop through all the page entries that need protection level changed
-  for (i = 0; i < len; i++) 
+  for (i = 0; i < len; i++)
   {
     //pass in process pagedir cause that's what we're concerned with
     //now give it addr+i to get address page
     //pass in 0 so it doesn't allocate new tables
     //walk through the physical memory, assigning flags as we go
+    //probs overkill but gets job done!
     page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
     //change the protection flags
-    *page_table_entry &= prot;  
+    //set last 3 bits to 0 (flag bits)
+    *page_table_entry &= 0xfffffff9;
+    *page_table_entry |= prot;
   }
   //flush that tlb real good
-  lcr3(*proc->pgdir);
+  lcr3(v2p(proc->pgdir));
   return 0;
 }
-
 
 // Allocate page tables and physical memory to grow process from oldsz to
 // newsz, which need not be page aligned.  Returns new size or 0 on error.

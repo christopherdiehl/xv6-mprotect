@@ -107,13 +107,13 @@ memmove(void *vdst, void *vsrc, int n)
 //need to change the restorer
 void restorer(void);
 __asm__ ("restorer:\n\t"
-            "addl $0x4,%esp\n\t"
+            "addl $0xc,%esp\n\t"
             "pop %edx\n\t"
             "pop %ecx\n\t"
             "pop %eax\n\t"
             "ret\n\t");
 
-int signal(int signum, void(*handler)(int))
+int signal(int signum, void(*handler)(int,siginfo_t))
 {
     signal_restorer(restorer);
     return signal_register(signum, handler);
