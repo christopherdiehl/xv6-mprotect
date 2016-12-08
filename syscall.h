@@ -24,3 +24,4 @@
 #define SYS_signal_register 23
 #define SYS_signal_restorer 24
 #define SYS_mprotect 25
+#define SYS_cowfork 26
