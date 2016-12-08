@@ -107,7 +107,8 @@ memmove(void *vdst, void *vsrc, int n)
 //need to change the restorer
 void restorer(void);
 __asm__ ("restorer:\n\t"
-            "addl $0xC,%esp\n\t"
+            "addl $0x4,%esp\n\t"
+            "addl $0x8,%esp\n\t"
             "pop %edx\n\t"
             "pop %ecx\n\t"
             "pop %eax\n\t"
