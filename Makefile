@@ -173,7 +173,7 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_shutdown\
-	_test_signal\
+	_signal_test\
 	_test_mprotect\
 	#_test_cow\
 
