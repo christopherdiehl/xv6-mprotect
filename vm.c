@@ -236,7 +236,7 @@ mprotect(void *addr, int len, int prot)
     // *page_table_entry &= 0xfffffff9;
     // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
     switch(prot) {
-      case PROT_NONE: 
+      case PROT_NONE:
         *page_table_entry &= ~(PTE_U | PTE_W);
         break;
       case PROT_READ: //good
@@ -249,8 +249,6 @@ mprotect(void *addr, int len, int prot)
         *page_table_entry |= (PTE_P | PTE_W | PTE_U);
     }
     cprintf("page table entry after: 0x%x\n",*page_table_entry);
-
-    //switch on the protection level here
   } while(curr < ((uint)addr +len));
 
   cprintf("FLUSHING TLB!\n");
