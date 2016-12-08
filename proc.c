@@ -175,6 +175,10 @@ fork(void)
   return pid;
 }
 
+int cowfork(void) {
+  return -1;
+}
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
@@ -475,6 +479,7 @@ procdump(void)
 
 void signal_deliver(int signum,siginfo_t si)
 {
+  //signal broken? --look here and  restorer
 	uint old_eip = proc->tf->eip;
 	*((uint*)(proc->tf->esp - 4))  = (uint) old_eip;		// real return address
 	*((uint*)(proc->tf->esp - 8))  = proc->tf->eax;			// eax
