@@ -115,8 +115,6 @@ int sys_mprotect(void)
   if(argint(2,&prot) <0)
     return -1;
 
-  cprintf("made it to sys_mprotect\n");
-
   return mprotect((void*)addr,len,prot);
 }
 
