@@ -15,10 +15,10 @@ void handler(int signum, siginfo_t info)
 	else
 	{
 		printf(1, "ERROR: Didn't get proper exception, this should not happen.\n");
-		exit();
+		
 	}
 	printf(1,"FINISHED IN HANDLER!\n");
-} 
+}
 int main(void)
 {
 	signal(SIGSEGV, handler);
@@ -26,6 +26,6 @@ int main(void)
  	mprotect((void *)p, sizeof(int), PROT_READ);
  	*p=100;
  	printf(1, "COMPLETED: value is %d, expecting 100!\n", *p);
- 	
+
  	exit();
 }
