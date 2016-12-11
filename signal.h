@@ -4,7 +4,7 @@
 #define SIGKILL	0
 #define SIGFPE	1
 #define SIGSEGV	2
-typedef struct siginfo_t_{
+typedef struct {
 	uint addr; // Should be an address.
 	uint type; // Should be a protection level
 } siginfo_t;
