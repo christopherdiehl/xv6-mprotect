@@ -21,7 +21,7 @@
 8010c5c0 panicked
 8010c5e0 cons
 80100317 printint
-8010a004 digits.1615
+8010a004 digits.1614
 80100776 consputc
 8010a000 crt
 80100601 cgaputc
@@ -102,8 +102,8 @@
 8010c668 initproc
 801043bf allocproc
 80104ead wakeup1
-8010c008 first.1653
-8010c00c states.1678
+8010c008 first.1652
+8010c00c states.1677
 00000000 spinlock.c
 80105223 readeflags
 80105233 cli
