@@ -202,6 +202,14 @@ struct gatedesc {
   uint off_31_16 : 16;  // high bits of offset in segment
 };
 
+//Handle Page Table entries
+
+struct {
+  struct spinlock lock;
+  int pte_array [NPTENTRIES*NPDENTRIES];
+} pte_lookup;
+
+
 // Set up a normal interrupt/trap gate descriptor.
 // - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
 //   interrupt gate clears FL_IF, trap gate leaves FL_IF alone
