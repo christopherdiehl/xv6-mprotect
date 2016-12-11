@@ -1,4 +1,3 @@
-#include "signal.h"
 struct stat;
 struct rtcdate;
 
