@@ -176,7 +176,43 @@ fork(void)
 }
 
 int cowfork(void) {
-  return -1;
+  int i, pid;
+  struct proc *np;
+
+  // Allocate process.
+  if((np = allocproc()) == 0)
+    return -1;
+
+  // Copy process state from p.
+  //look into this for cowfork
+  if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+  np->sz = proc->sz;
+  np->parent = proc;
+  *np->tf = *proc->tf;
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(proc->ofile[i])
+      np->ofile[i] = filedup(proc->ofile[i]);
+  np->cwd = idup(proc->cwd);
+
+  safestrcpy(np->name, proc->name, sizeof(proc->name));
+
+  pid = np->pid;
+
+  // lock to force the compiler to emit the np->state write last.
+  acquire(&ptable.lock);
+  np->state = RUNNABLE;
+  release(&ptable.lock);
+
+  return pid;
 }
 
 // Exit the current process.  Does not return.
@@ -491,7 +527,11 @@ void signal_deliver(int signum,siginfo_t si)
 	*((uint*)(proc->tf->esp - 32)) = proc->restorer_addr;	// address of restorer
 	proc->tf->esp -= 32;
 	proc->tf->eip = (uint) proc->handlers[signum];
+
+  cprintf("retaddr = 0x%x\n",old_eip);
 }
+
+
 
 sighandler_t signal_register_handler(int signum, sighandler_t handler)
 {

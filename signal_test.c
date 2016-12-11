@@ -6,10 +6,10 @@ void handle_signal(int signum,siginfo_t st)
 {
     printf(1,"st-addr: 0x%x, st->type: 0x%x",st.addr,st.type);
     unsigned addr_signum = (unsigned) &signum;
-    unsigned addr_retaddr = addr_signum + 16;
+    unsigned addr_retaddr = addr_signum + 24;
     unsigned *retaddr = (unsigned*) addr_retaddr;
-    printf(1, "addr_signum = %d\n", addr_signum);
-    printf(1, "addr_retaddr = %d\n", addr_retaddr);
+    printf(1, "addr_signum = 0x%x\n", addr_signum);
+    printf(1, "addr_retaddr = 0x%x\n", addr_retaddr);
     printf(1, "retaddr = %d\n", *retaddr);
     *retaddr += 4;
 

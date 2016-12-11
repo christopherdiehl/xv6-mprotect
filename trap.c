@@ -81,8 +81,9 @@ trap(struct trapframe *tf)
 
    case T_DIVIDE:
       if (proc->handlers[SIGFPE] != (sighandler_t) -1) {
-        si.type=0;
-        si.addr = rcr2();
+        cprintf("T_DIVIDE err\n");
+        si.type= 1;
+        si.addr = 5;
         signal_deliver(SIGFPE,si);
         break;
       }
