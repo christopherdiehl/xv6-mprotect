@@ -1,5 +1,6 @@
 #include "types.h"
 #include "user.h"
+#include "signal.h"
 
 int *p;
 
@@ -15,7 +16,7 @@ void handler(int signum, siginfo_t info)
 	else
 	{
 		printf(1, "ERROR: Didn't get proper exception, this should not happen.\n");
-		
+
 	}
 	printf(1,"FINISHED IN HANDLER!\n");
 }
