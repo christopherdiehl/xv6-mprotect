@@ -5,7 +5,7 @@ _test_mprotect:     file format elf32-i386
 Disassembly of section .text:
 
 00000000 <handler>:
-#include "user.h"
+#include "signal.h"
 
 int *p;
 
@@ -58,7 +58,6 @@ void handler(int signum, siginfo_t info)
   66:	6a 01                	push   $0x1
   68:	e8 b2 04 00 00       	call   51f <printf>
   6d:	83 c4 10             	add    $0x10,%esp
-		
 	}
 	printf(1,"FINISHED IN HANDLER!\n");
   70:	83 ec 08             	sub    $0x8,%esp
@@ -81,7 +80,7 @@ int main(void)
   90:	89 e5                	mov    %esp,%ebp
   92:	51                   	push   %ecx
   93:	83 ec 04             	sub    $0x4,%esp
-	signal(SIGSEGV, handler);
+	signal(SIGSEGV,(sighandler_t) handler);
   96:	83 ec 08             	sub    $0x8,%esp
   99:	68 00 00 00 00       	push   $0x0
   9e:	6a 02                	push   $0x2
@@ -536,7 +535,7 @@ memmove(void *vdst, void *vsrc, int n)
             "pop %eax\n\t"
             "ret\n\t");
 
-int signal(int signum, void(*handler)(int,siginfo_t))
+int signal(int signum, void(*handler)(int))
 {
  34f:	55                   	push   %ebp
  350:	89 e5                	mov    %esp,%ebp

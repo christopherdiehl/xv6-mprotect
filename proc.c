@@ -515,7 +515,6 @@ procdump(void)
 
 void signal_deliver(int signum,siginfo_t si)
 {
-  //signal broken? --look here and  restorer
 	uint old_eip = proc->tf->eip;
 	*((uint*)(proc->tf->esp - 4))  = (uint) old_eip;		// real return address
 	*((uint*)(proc->tf->esp - 8))  = proc->tf->eax;			// eax
@@ -527,8 +526,6 @@ void signal_deliver(int signum,siginfo_t si)
 	*((uint*)(proc->tf->esp - 32)) = proc->restorer_addr;	// address of restorer
 	proc->tf->esp -= 32;
 	proc->tf->eip = (uint) proc->handlers[signum];
-
-  cprintf("retaddr = 0x%x\n",old_eip);
 }
 
 

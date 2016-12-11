@@ -102,7 +102,7 @@ trap(struct trapframe *tf)
           si.type = PROT_WRITE;
         }
         si.addr = rcr2();
-        cprintf(" PAGE FAULT addr: 0x%x\n",si.addr);
+        cprintf(" PAGE FAULT addr: 0x%x addrtype: 0x%x\n",si.addr,si.type);
         signal_deliver(SIGSEGV,si);
         break;
       }

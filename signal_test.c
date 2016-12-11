@@ -20,7 +20,7 @@ int main(void)
 {
     register int ecx asm ("%ecx");
 
-    signal(SIGFPE, handle_signal);         // register the actual signal for divide by zero.
+    signal(SIGFPE, (sighandler_t)handle_signal);         // register the actual signal for divide by zero.
 
     int x = 5;
     int y = 0;

@@ -83,7 +83,7 @@ int main(void)
   97:	83 ec 14             	sub    $0x14,%esp
     register int ecx asm ("%ecx");
 
-    signal(SIGFPE, handle_signal);         // register the actual signal for divide by zero.
+    signal(SIGFPE, (sighandler_t)handle_signal);         // register the actual signal for divide by zero.
   9a:	83 ec 08             	sub    $0x8,%esp
   9d:	68 00 00 00 00       	push   $0x0
   a2:	6a 01                	push   $0x1
@@ -548,7 +548,7 @@ memmove(void *vdst, void *vsrc, int n)
             "pop %eax\n\t"
             "ret\n\t");
 
-int signal(int signum, void(*handler)(int,siginfo_t))
+int signal(int signum, void(*handler)(int))
 {
  357:	55                   	push   %ebp
  358:	89 e5                	mov    %esp,%ebp

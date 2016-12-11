@@ -224,16 +224,15 @@ mprotect(void *addr, int len, int prot)
   //loop through all the page entries that need protection level changed
   //makes prot cnstants change in types.h
   //break it down, use PTE
+  cprintf("addr: %d\n",(int)addr);
   uint base_addr = PGROUNDDOWN((uint)addr);
   uint curr = base_addr;
-  cprintf(" Got to my mprotect!\n");
   do {
 
     page_table_entry = walkpgdir(proc->pgdir,(void *)curr ,0);
     curr += PGSIZE;
     //clear last 3 bits
     cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
-
     // *page_table_entry &= 0xfffffff9;
     // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
     switch(prot) {
@@ -252,9 +251,9 @@ mprotect(void *addr, int len, int prot)
     cprintf("page table entry after: 0x%x\n",*page_table_entry);
   } while(curr < ((uint)addr +len));
 
-  cprintf("FLUSHING TLB!\n");
   //flush that tlb real good
   lcr3(v2p(proc->pgdir));
+  cprintf("returning from mprotect\n");
   return 0; ///what happens after returned?
 }
 

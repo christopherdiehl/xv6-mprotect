@@ -16,13 +16,12 @@ void handler(int signum, siginfo_t info)
 	else
 	{
 		printf(1, "ERROR: Didn't get proper exception, this should not happen.\n");
-
 	}
 	printf(1,"FINISHED IN HANDLER!\n");
 }
 int main(void)
 {
-	signal(SIGSEGV, handler);
+	signal(SIGSEGV,(sighandler_t) handler);
  	p = (int *) sbrk(1);
  	mprotect((void *)p, sizeof(int), PROT_READ);
  	*p=100;

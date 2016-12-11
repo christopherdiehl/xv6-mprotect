@@ -174,7 +174,7 @@ UPROGS=\
 	_zombie\
 	_shutdown\
 	_test_mprotect\
-	#_signal_test\
+	_signal_test\
 	#_test_cow\
 
 fs.img: mkfs README $(UPROGS)
