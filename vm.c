@@ -6,10 +6,24 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "spinlock.h"
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 struct segdesc gdt[NSEGS];
+//
+
+
+// //Handle Page Table entries
+struct pte_lookup_table_ {
+  int pte_array [TOTAL_NPENTRIES];
+} pte_lookup_table;
+
+struct spinlock pte_lookup_lock;
+
+void init_pte_lookup_lock(void) {
+  initlock(&pte_lookup_lock,"pte_lookup");
+}
 
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.

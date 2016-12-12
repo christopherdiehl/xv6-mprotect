@@ -169,6 +169,7 @@ void            uartintr(void);
 void            uartputc(int);
 
 // vm.c
+void            init_pte_lookup_lock(void);
 void            seginit(void);
 void            kvmalloc(void);
 void            vmenable(void);
