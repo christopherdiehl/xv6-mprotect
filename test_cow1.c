@@ -15,17 +15,16 @@ int main(void)
     t1 = 3;
     t2 = 0;
     t1 = t1+t2;
-    if (cowfork() != 0){
+    if (cowfork() == 0){
       //t2 = 5;
-      //i am the child!
     //  printf(1,"t2 = %d\n",t2);
-      printf(1,"I am the father!\n");
-      wait();
-
+      printf(1,"I AM A CHILD!\n");
+      exit();
     } else{
     //  t1 = 7;
     //  printf(1,"t1 = %d\n",t1);
-      printf(1,"I AM A CHILD!\n");
+      printf(1,"I am the father!\n");
+      wait();
     }
     exit();
 }
