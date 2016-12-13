@@ -81,7 +81,6 @@ trap(struct trapframe *tf)
 
    case T_DIVIDE:
       if (proc->handlers[SIGFPE] != (sighandler_t) -1) {
-        cprintf("T_DIVIDE err\n");
         si.type= 1;
         si.addr = 5;
         signal_deliver(SIGFPE,si);
@@ -89,8 +88,7 @@ trap(struct trapframe *tf)
       }
     //handle pgfault with mem_protect
     case T_PGFLT:
-      //create a siginfo_t struct
-      cprintf(" PAGEFULT !!err : 0x%x\n",tf->err);
+      // cprintf(" PAGEFULT !!err : 0x%x\n",tf->err);
 
       if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         int err = tf->err;
@@ -102,7 +100,7 @@ trap(struct trapframe *tf)
           si.type = PROT_WRITE;
         }
         si.addr = rcr2();
-        cprintf(" PAGE FAULT addr: 0x%x addrtype: 0x%x\n",si.addr,si.type);
+        // cprintf(" PAGE FAULT addr: 0x%x addrtype: 0x%x\n",si.addr,si.type);
         signal_deliver(SIGSEGV,si);
         break;
       }

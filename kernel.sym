@@ -1,7 +1,7 @@
 80100000 .text
-80108c48 .rodata
-8010941f .stab
-80109420 .stabstr
+80108c58 .rodata
+8010942f .stab
+80109430 .stabstr
 8010a000 .data
 8010c5c0 .bss
 00000000 .debug_line
@@ -229,7 +229,7 @@
 8010575b fetchint
 801081e1 setupkvm
 80105611 memcpy
-80108837 freevm
+80108846 freevm
 80107138 vector1
 801077f9 vector178
 80107277 vector38
@@ -252,7 +252,7 @@
 80152460 gdt
 8010524d initlock
 801075a1 vector128
-80108baa copyout
+80108bb9 copyout
 801073fa vector81
 80104e06 sleep
 80102f9f microdelay
@@ -282,7 +282,7 @@
 8010751a vector113
 80102aeb freerange
 80107586 vector125
-801086b1 allocuvm
+801086c0 allocuvm
 80106a19 trapret
 801079c1 vector216
 80107358 vector63
@@ -312,7 +312,7 @@
 80107a51 vector228
 8010729b vector42
 80107523 vector114
-80108b50 uva2ka
+80108b5f uva2ka
 801077d5 vector175
 80107655 vector143
 80100f78 filealloc
@@ -324,7 +324,7 @@
 80107649 vector142
 801074a5 vector100
 8010790d vector201
-801088d7 clearpteu
+801088e6 clearpteu
 80106a5f tvinit
 80106965 sys_signal_restorer
 8010733d vector60
@@ -393,7 +393,7 @@
 8010418f pipewrite
 8010567d strncpy
 801073a0 vector71
-80108918 copyuvm
+80108927 copyuvm
 80111860 ftable
 80107721 vector160
 8010581f argptr
@@ -453,7 +453,7 @@
 80102a8e kinit1
 801072e3 vector50
 801071aa vector15
-80108a34 copyuvm_cow
+80108a43 copyuvm_cow
 801076b5 vector151
 8010740c vector83
 80107442 vector89
@@ -468,7 +468,7 @@
 80115c00 idt
 801079d9 vector218
 801043a6 pinit
-8010877a deallocuvm
+80108789 deallocuvm
 80107a2d vector225
 80107865 vector187
 8010460f growproc

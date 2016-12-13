@@ -244,28 +244,29 @@ mprotect(void *addr, int len, int prot)
     page_table_entry = walkpgdir(proc->pgdir,(void *)curr ,0);
     curr += PGSIZE;
     //clear last 3 bits
-    cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
-    // *page_table_entry &= 0xfffffff9;
+    // cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
+    //clear last 3 bits
+    *page_table_entry &= 0xfffffff9;
     // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
     switch(prot) {
       case PROT_NONE:
-        *page_table_entry &= ~(PTE_U | PTE_W);
+        *page_table_entry |= PTE_P;
         break;
-      case PROT_READ: //good
-        *page_table_entry &= (~PTE_W |PTE_U);
+      case PROT_READ:
+        *page_table_entry |= (PTE_P | PTE_U);
         break;
       case PROT_WRITE:
         *page_table_entry |= (PTE_P | PTE_W);
         break;
-      case PROT_READ | PROT_WRITE: //good
+      case PROT_READ | PROT_WRITE:
         *page_table_entry |= (PTE_P | PTE_W | PTE_U);
     }
-    cprintf("page table entry after: 0x%x\n",*page_table_entry);
+    // cprintf("page table entry after: 0x%x\n",*page_table_entry);
   } while(curr < ((uint)addr +len));
 
   //flush that tlb real good
   lcr3(v2p(proc->pgdir));
-  cprintf("returning from mprotect\n");
+  // cprintf("returning from mprotect\n");
   return 0; ///what happens after returned?
 }
 
