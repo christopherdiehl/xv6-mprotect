@@ -320,15 +320,18 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       pa = PTE_ADDR(*pte);
       acquire(&pte_lookup_table.lock);
         if(pte_lookup_table.pte_array[pa/PGSIZE] < 2){
+          cprintf("I AM TRYING TO DEALLOCATE LAST MEM \n");
           if(pa == 0)
             panic("kfree");
           char *v = p2v(pa);
           kfree(v);
           *pte = 0;
         } else if(pte_lookup_table.pte_array[pa/PGSIZE] == 2) { //need to decrement and make mem writable
+          cprintf("I AM TRYING TO DEALLOCATE SECOND MEM WITH 2 POINTERS\n");
           *pte |= PTE_W; //you may now write
           pte_lookup_table.pte_array[pa/PGSIZE] = 1;
         } else {
+          cprintf("DEALLOC ELSE? \n");
           pte_lookup_table.pte_array[pa/PGSIZE]--;
         }
       release(&pte_lookup_table.lock);
