@@ -3,7 +3,7 @@
 
 #define SIGKILL	0
 #define SIGFPE	1
-#define SIGSEGV	2
+#define SIGSEGV	14
 
 typedef struct {
 	uint addr; // Should be an address.

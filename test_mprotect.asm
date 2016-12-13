@@ -83,7 +83,7 @@ int main(void)
 	signal(SIGSEGV,(sighandler_t) handler);
   96:	83 ec 08             	sub    $0x8,%esp
   99:	68 00 00 00 00       	push   $0x0
-  9e:	6a 02                	push   $0x2
+  9e:	6a 0e                	push   $0xe
   a0:	e8 aa 02 00 00       	call   34f <signal>
   a5:	83 c4 10             	add    $0x10,%esp
  	p = (int *) sbrk(1);
