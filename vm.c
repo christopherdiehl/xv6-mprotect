@@ -289,7 +289,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
     mem = kalloc();
     if(mem == 0){
       cprintf("allocuvm out of memory\n");
-      deallocuvm(pgdir, newsz, oldsz);
+      ocuvm(pgdir, newsz, oldsz);
       return 0;
     }
     memset(mem, 0, PGSIZE);
@@ -318,11 +318,20 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       a += (NPTENTRIES - 1) * PGSIZE;
     else if((*pte & PTE_P) != 0){
       pa = PTE_ADDR(*pte);
-      if(pa == 0)
-        panic("kfree");
-      char *v = p2v(pa);
-      kfree(v);
-      *pte = 0;
+      acquire(&pte_lookup_table.lock);
+        if(pte_lookup_table.pte_array[pa/PGSIZE] < 2){
+          if(pa == 0)
+            panic("kfree");
+          char *v = p2v(pa);
+          kfree(v);
+          *pte = 0;
+        } else if(pte_lookup_table.pte_array[pa/PGSIZE] == 2) { //need to decrement and make mem writable
+          *pte |= PTE_W; //you may now write
+          pte_lookup_table.pte_array[pa/PGSIZE] = 1;
+        } else {
+          pte_lookup_table.pte_array[pa/PGSIZE]--;
+        }
+      release(&pte_lookup_table.lock);
       //need to update entries in page table here
     }
   }
