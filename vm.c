@@ -15,7 +15,7 @@ struct segdesc gdt[NSEGS];
 
 // //Handle Page Table entries
 struct {
-  int pte_array [TOTAL_NPENTRIES];
+  char pte_array [NPDENTRIES*NPTENTRIES];
   struct spinlock lock;
 } pte_lookup_table;
 
@@ -236,7 +236,7 @@ mprotect(void *addr, int len, int prot)
   //loop through all the page entries that need protection level changed
   //makes prot cnstants change in types.h
   //break it down, use PTE
-  cprintf("addr: %d\n",(int)addr);
+  // cprintf("addr: %d\n",(int)addr);
   uint base_addr = PGROUNDDOWN((uint)addr);
   uint curr = base_addr;
   do {
@@ -322,6 +322,7 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       char *v = p2v(pa);
       kfree(v);
       *pte = 0;
+      //need to update entries in page table here
     }
   }
   return newsz;
@@ -412,10 +413,25 @@ copyuvm_cow(pde_t *pgdir, uint sz)
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
       goto bad;
-    memmove(mem, (char*)p2v(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+
+    acquire(&pte_lookup_table.lock);
+      if(pte_lookup_table.pte_array[pa] == 0){
+        pte_lookup_table.pte_array[pa] = 2; //now child + father fork are pointing at it
+      } else {
+        pte_lookup_table.pte_array[pa] += 1;
+      }
+    release(&pte_lookup_table.lock);
+
+    if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) //dont make new pages
       goto bad;
+
+    //make it write only
+    mprotect((void*)pa,PGSIZE,PROT_READ);
   }
+  //set process->shared = 1;
+  proc->shared = 1;
+  //flush tlb?
+  // lcr3(v2p(proc->pgdir)); mprotect will do this for us
   return d;
 
 bad:

@@ -71,6 +71,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   sighandler_t handlers[2];    // Signal handlers
   uint restorer_addr;          // Signal restorer
+  int shared;
 };
 
 // Process memory is laid out contiguously, low addresses first:

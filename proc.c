@@ -185,7 +185,7 @@ int cowfork(void) {
 
   // Copy process state from p.
   //look into this for cowfork
-  if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
+  if((np->pgdir = copyuvm_cow(proc->pgdir, proc->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
     np->state = UNUSED;

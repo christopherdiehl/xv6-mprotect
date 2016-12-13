@@ -122,7 +122,6 @@ struct segdesc {
 #define NPDENTRIES      1024    // # directory entries per page directory
 #define NPTENTRIES      1024    // # PTEs per page table
 #define PGSIZE          4096    // bytes mapped by a page
-#define TOTAL_NPENTRIES 60 *1024 //64MB
 
 #define PGSHIFT         12      // log2(PGSIZE)
 #define PTXSHIFT        12      // offset of PTX in a linear address
@@ -145,6 +144,7 @@ struct segdesc {
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
+
 
 #ifndef __ASSEMBLER__
 typedef uint pte_t;

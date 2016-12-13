@@ -103,6 +103,9 @@ trap(struct trapframe *tf)
         // cprintf(" PAGE FAULT addr: 0x%x addrtype: 0x%x\n",si.addr,si.type);
         signal_deliver(SIGSEGV,si);
         break;
+      } else if (proc->shared == 1) {
+        cprintf("Do stuff!");
+
       }
 
       break;
