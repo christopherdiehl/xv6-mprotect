@@ -6,10 +6,22 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "spinlock.h"
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 struct segdesc gdt[NSEGS];
+
+
+// //Handle Page Table entries
+struct {
+  int pte_array [TOTAL_NPENTRIES];
+  struct spinlock lock;
+} pte_lookup_table;
+
+void init_pte_lookup_lock(void) {
+  initlock(&pte_lookup_table.lock,"pte_lookup");
+}
 
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
@@ -80,6 +92,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
       return -1;
     if(*pte & PTE_P)
       panic("remap");
+  //  page_references[PTE_ADDR(*pte)] = 1; //give pte_t a reference of one since fork copy just stopped there
     *pte = pa | perm | PTE_P;
     if(a == last)
       break;
@@ -219,25 +232,42 @@ int
 mprotect(void *addr, int len, int prot)
 {
   pte_t *page_table_entry;
-  int i = 0;
   //might need to PGRDWN the address
   //loop through all the page entries that need protection level changed
-  for (i = 0; i < len; i++)
-  {
-    //pass in process pagedir cause that's what we're concerned with
-    //now give it addr+i to get address page
-    //pass in 0 so it doesn't allocate new tables
-    //walk through the physical memory, assigning flags as we go
-    //probs overkill but gets job done!
-    page_table_entry = walkpgdir(proc->pgdir,(void *)addr +i, 0);
-    //change the protection flags
-    //set last 3 bits to 0 (flag bits)
+  //makes prot cnstants change in types.h
+  //break it down, use PTE
+  cprintf("addr: %d\n",(int)addr);
+  uint base_addr = PGROUNDDOWN((uint)addr);
+  uint curr = base_addr;
+  do {
+
+    page_table_entry = walkpgdir(proc->pgdir,(void *)curr ,0);
+    curr += PGSIZE;
+    //clear last 3 bits
+    // cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
+    //clear last 3 bits
     *page_table_entry &= 0xfffffff9;
-    *page_table_entry |= prot;
-  }
+    // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
+    switch(prot) {
+      case PROT_NONE:
+        *page_table_entry |= PTE_P;
+        break;
+      case PROT_READ:
+        *page_table_entry |= (PTE_P | PTE_U);
+        break;
+      case PROT_WRITE:
+        *page_table_entry |= (PTE_P | PTE_W);
+        break;
+      case PROT_READ | PROT_WRITE:
+        *page_table_entry |= (PTE_P | PTE_W | PTE_U);
+    }
+    // cprintf("page table entry after: 0x%x\n",*page_table_entry);
+  } while(curr < ((uint)addr +len));
+
   //flush that tlb real good
   lcr3(v2p(proc->pgdir));
-  return 0;
+  // cprintf("returning from mprotect\n");
+  return 0; ///what happens after returned?
 }
 
 // Allocate page tables and physical memory to grow process from oldsz to
@@ -360,6 +390,39 @@ bad:
   freevm(d);
   return 0;
 }
+
+// Given a parent process's page table, create a copy
+// of it for a child.
+pde_t*
+copyuvm_cow(pde_t *pgdir, uint sz)
+{
+  pde_t *d;
+  pte_t *pte;
+  uint pa, i, flags;
+  char *mem;
+
+  if((d = setupkvm()) == 0)
+    return 0;
+  for(i = 0; i < sz; i += PGSIZE){
+    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+      panic("copyuvm: pte should exist");
+    if(!(*pte & PTE_P))
+      panic("copyuvm: page not present");
+    pa = PTE_ADDR(*pte);
+    flags = PTE_FLAGS(*pte);
+    if((mem = kalloc()) == 0)
+      goto bad;
+    memmove(mem, (char*)p2v(pa), PGSIZE);
+    if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+      goto bad;
+  }
+  return d;
+
+bad:
+  freevm(d);
+  return 0;
+}
+
 
 //PAGEBREAK!
 // Map user virtual address to kernel address.

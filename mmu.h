@@ -1,4 +1,5 @@
-// This file contains definitions for the 
+
+// This file contains definitions for the
 // x86 memory management unit (MMU).
 
 // Eflags register
@@ -106,7 +107,7 @@ struct segdesc {
 // | Page Directory |   Page Table   | Offset within Page  |
 // |      Index     |      Index     |                     |
 // +----------------+----------------+---------------------+
-//  \--- PDX(va) --/ \--- PTX(va) --/ 
+//  \--- PDX(va) --/ \--- PTX(va) --/
 
 // page directory index
 #define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0x3FF)
@@ -121,6 +122,7 @@ struct segdesc {
 #define NPDENTRIES      1024    // # directory entries per page directory
 #define NPTENTRIES      1024    // # PTEs per page table
 #define PGSIZE          4096    // bytes mapped by a page
+#define TOTAL_NPENTRIES 60 *1024 //64MB
 
 #define PGSHIFT         12      // log2(PGSIZE)
 #define PTXSHIFT        12      // offset of PTX in a linear address
@@ -201,6 +203,7 @@ struct gatedesc {
   uint p : 1;           // Present
   uint off_31_16 : 16;  // high bits of offset in segment
 };
+
 
 // Set up a normal interrupt/trap gate descriptor.
 // - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.

@@ -115,9 +115,6 @@ int sys_mprotect(void)
   if(argint(2,&prot) <0)
     return -1;
 
-  if (prot != PROT_WRITE && prot != PROT_READ && prot != PROT_NONE){
-    return -1;
-  }
   return mprotect((void*)addr,len,prot);
 }
 
@@ -137,7 +134,10 @@ int sys_signal_register(void)
 
     return (int) signal_register_handler(signum, handler);
 }
-
+int sys_cowfork(void)
+{
+  return cowfork();
+}
 int sys_signal_restorer(void)
 {
     int restorer_addr;

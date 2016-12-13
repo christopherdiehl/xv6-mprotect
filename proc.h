@@ -12,7 +12,7 @@ struct cpu {
   volatile uint started;       // Has the CPU started?
   int ncli;                    // Depth of pushcli nesting.
   int intena;                  // Were interrupts enabled before pushcli?
-  
+
   // Cpu-local storage variables; see below
   struct cpu *cpu;
   struct proc *proc;           // The currently-running process.
@@ -20,6 +20,7 @@ struct cpu {
 
 extern struct cpu cpus[NCPU];
 extern int ncpu;
+
 
 // Per-CPU variables, holding pointers to the
 // current cpu and to the current process.

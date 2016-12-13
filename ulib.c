@@ -113,7 +113,7 @@ __asm__ ("restorer:\n\t"
             "pop %eax\n\t"
             "ret\n\t");
 
-int signal(int signum, void(*handler)(int,siginfo_t))
+int signal(int signum, void(*handler)(int))
 {
     signal_restorer(restorer);
     return signal_register(signum, handler);
