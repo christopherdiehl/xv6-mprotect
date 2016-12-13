@@ -15,7 +15,7 @@ struct segdesc gdt[NSEGS];
 
 // //Handle Page Table entries
 struct {
-  char pte_array [NPDENTRIES*NPTENTRIES];
+  int pte_array [NPDENTRIES*NPTENTRIES];
   struct spinlock lock;
 } pte_lookup_table;
 
