@@ -226,6 +226,7 @@ int cowfork(void) {
 void
 exit(void)
 {
+  cprintf("Exiting\n");
   struct proc *p;
   int fd;
 
