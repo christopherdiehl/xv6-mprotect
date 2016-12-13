@@ -105,7 +105,7 @@ trap(struct trapframe *tf)
         break;
       } else if (proc->shared == 1) {
         cprintf("Do stuff!");
-
+        
       }
 
       break;

@@ -232,6 +232,7 @@ int
 mprotect(void *addr, int len, int prot)
 {
   pte_t *page_table_entry;
+  cprintf("*addr: %d\n",(uint)addr);
   //might need to PGRDWN the address
   //loop through all the page entries that need protection level changed
   //makes prot cnstants change in types.h
@@ -244,7 +245,7 @@ mprotect(void *addr, int len, int prot)
     page_table_entry = walkpgdir(proc->pgdir,(void *)curr ,0);
     curr += PGSIZE;
     //clear last 3 bits
-    // cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
+    cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
     //clear last 3 bits
     *page_table_entry &= 0xfffffff9;
     // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
@@ -261,7 +262,7 @@ mprotect(void *addr, int len, int prot)
       case PROT_READ | PROT_WRITE:
         *page_table_entry |= (PTE_P | PTE_W | PTE_U);
     }
-    // cprintf("page table entry after: 0x%x\n",*page_table_entry);
+    cprintf("page table entry after: 0x%x\n",*page_table_entry);
   } while(curr < ((uint)addr +len));
 
   //flush that tlb real good
@@ -413,25 +414,30 @@ copyuvm_cow(pde_t *pgdir, uint sz)
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
       goto bad;
-
     acquire(&pte_lookup_table.lock);
-      if(pte_lookup_table.pte_array[pa] == 0){
-        pte_lookup_table.pte_array[pa] = 2; //now child + father fork are pointing at it
+      if(pte_lookup_table.pte_array[pa/PGSIZE] == 0) { //page fault
+        pte_lookup_table.pte_array[pa/PGSIZE] = 2; //now child + father fork are pointing at it
       } else {
-        pte_lookup_table.pte_array[pa] += 1;
+        pte_lookup_table.pte_array[pa/PGSIZE] += 1;
       }
     release(&pte_lookup_table.lock);
+    cprintf("ABOUT TO MAP\n");
 
     if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) //dont make new pages
       goto bad;
-
     //make it write only
-    mprotect((void*)pa,PGSIZE,PROT_READ);
+    // cprintf("ABOUT TO MPROTECT\n");
+    // mprotect(&pte,PGSIZE,PROT_READ);
+    cprintf("pte: 0x%x\n",*pte);
+    *pte &= ~PTE_W;
+    cprintf(" after pte: 0x%x\n",*pte);
+
   }
-  //set process->shared = 1;
-  proc->shared = 1;
+
+  cprintf("Returning from copyuvm_cow\n");
+
   //flush tlb?
-  // lcr3(v2p(proc->pgdir)); mprotect will do this for us
+  lcr3(v2p(pgdir));
   return d;
 
 bad:

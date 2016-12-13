@@ -185,6 +185,7 @@ int cowfork(void) {
 
   // Copy process state from p.
   //look into this for cowfork
+  cprintf("COWFORK ME!\n");
   if((np->pgdir = copyuvm_cow(proc->pgdir, proc->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
@@ -212,6 +213,10 @@ int cowfork(void) {
   np->state = RUNNABLE;
   release(&ptable.lock);
 
+  //set process to shared
+  proc->shared = 1;
+  np->shared = 1;
+  cprintf("THE FORK IS IN ME!\n");
   return pid;
 }
 
