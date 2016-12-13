@@ -15,7 +15,7 @@ struct segdesc gdt[NSEGS];
 
 // //Handle Page Table entries
 struct {
-  int pte_array [NPDENTRIES*NPTENTRIES];
+  char pte_array [NPDENTRIES*NPTENTRIES];
   struct spinlock lock;
 } pte_lookup_table;
 
@@ -433,26 +433,21 @@ copyuvm_cow(pde_t *pgdir, uint sz)
         pte_lookup_table.pte_array[pa/PGSIZE] += 1;
       }
     release(&pte_lookup_table.lock);
-    cprintf("ABOUT TO MAP\n");
 
     if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) //dont make new pages
       goto bad;
     //make it write only
     // cprintf("ABOUT TO MPROTECT\n");
     // mprotect(&pte,PGSIZE,PROT_READ);
-    cprintf("pte: 0x%x\n",*pte);
     *pte &= ~PTE_W;
-    cprintf(" after pte: 0x%x\n",*pte);
 
   }
-
-  cprintf("Returning from copyuvm_cow\n");
-
   //flush tlb?
   lcr3(v2p(pgdir));
   return d;
 
 bad:
+  cprintf("BAD MEMORY!\n");
   freevm(d);
   return 0;
 }
