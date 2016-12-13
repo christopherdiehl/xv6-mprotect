@@ -320,8 +320,10 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       pa = PTE_ADDR(*pte);
       acquire(&pte_lookup_table.lock);
         if(pte_lookup_table.pte_array[pa/PGSIZE] < 2){
-          if(pa == 0)
+          if(pa == 0) {
+            release(&pte_lookup_table.lock);
             panic("kfree");
+          }
           char *v = p2v(pa);
           kfree(v);
           *pte = 0;
@@ -427,9 +429,11 @@ copyuvm_cow(pde_t *pgdir, uint sz)
       goto bad;
     acquire(&pte_lookup_table.lock);
       if(pte_lookup_table.pte_array[pa/PGSIZE] == 0) { //page fault
+        cprintf("ITS TWO!\n");
         pte_lookup_table.pte_array[pa/PGSIZE] = 2; //now child + father fork are pointing at it
       } else {
         pte_lookup_table.pte_array[pa/PGSIZE] += 1;
+
       }
     release(&pte_lookup_table.lock);
 
