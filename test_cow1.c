@@ -25,6 +25,7 @@ int main(void)
     //  t1 = 7;
     //  printf(1,"t1 = %d\n",t1);
       printf(1,"I am the father!\n");
+      wait();
     }
     exit();
 }
