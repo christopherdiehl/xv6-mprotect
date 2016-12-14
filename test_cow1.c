@@ -18,7 +18,7 @@ int main(void)
     if (cowfork() == 0){
       //t2 = 5;
     //  printf(1,"t2 = %d\n",t2);
-      *temp = 5;
+     // *temp = 5;
       printf(1,"I AM A CHILD! %d \n",*temp);
       exit();
     } else{

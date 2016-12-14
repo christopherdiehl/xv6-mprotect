@@ -88,10 +88,11 @@ trap(struct trapframe *tf)
       }
     //handle pgfault with mem_protect
     case T_PGFLT:
-      cprintf(" PAGEFULT !! SHARED = %d\n",proc->shared);
+     // cprintf(" PAGEFULT !! SHARED = %d\n",proc->shared);
 
       if(proc->shared == 1) {
-        cprintf("DO SOMETHING!\n");
+       cprintf("DO SOMETHING!\n");
+
       } else if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         cprintf("WHY IS THIS HAPPENING?\n");
         int err = tf->err;

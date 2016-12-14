@@ -361,6 +361,17 @@ freevm(pde_t *pgdir)
   kfree((char*)pgdir);
 }
 
+// Free a page table and all the physical memory pages
+// in the user part.
+void
+free_cow_vm(pde_t *pgdir)
+{
+
+  if(pgdir == 0)
+    panic("freevm: no pgdir");
+  deallocuvm(pgdir, KERNBASE, 0);
+}
+
 // Clear PTE_U on a page. Used to create an inaccessible
 // page beneath the user stack.
 void
@@ -447,6 +458,7 @@ copyuvm_cow(pde_t *pgdir, uint sz)
   }
   //flush tlb?
   lcr3(v2p(pgdir));
+  cprintf("FINISHED IN COW!\n");
   return d;
 
 bad:
