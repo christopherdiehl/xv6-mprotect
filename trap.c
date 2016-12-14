@@ -88,9 +88,11 @@ trap(struct trapframe *tf)
       }
     //handle pgfault with mem_protect
     case T_PGFLT:
-      // cprintf(" PAGEFULT !!err : 0x%x\n",tf->err);
+     // cprintf(" PAGEFULT !! SHARED = %d\n",proc->shared);
 
-      if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
+      if(proc->shared == 1) {
+         handle_cow_fault(rcr2());
+      } else if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
         int err = tf->err;
         if(err == 0x4 || err == 0x6 || err == 0x5) {
           si.type = PROT_NONE;
@@ -104,7 +106,6 @@ trap(struct trapframe *tf)
         signal_deliver(SIGSEGV,si);
         break;
       }
-
       break;
 
   //PAGEBREAK: 13

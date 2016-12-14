@@ -75,8 +75,9 @@ found:
 
   p->handlers[SIGKILL] = (sighandler_t) -1;
   p->handlers[SIGFPE] = (sighandler_t) -1;
+  p->handlers[SIGSEGV] = (sighandler_t) -1;
   p->restorer_addr = -1;
-
+  p->shared = 0;
   return p;
 }
 
@@ -185,7 +186,7 @@ int cowfork(void) {
 
   // Copy process state from p.
   //look into this for cowfork
-  if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
+  if((np->pgdir = copyuvm_cow(proc->pgdir, proc->sz)) == 0){
     kfree(np->kstack);
     np->kstack = 0;
     np->state = UNUSED;
@@ -212,6 +213,9 @@ int cowfork(void) {
   np->state = RUNNABLE;
   release(&ptable.lock);
 
+  //set process to shared
+  proc->shared = 1;
+  np->shared = 1;
   return pid;
 }
 
@@ -281,7 +285,11 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
+        if(p->shared == 0){
+          freevm(p->pgdir);
+        } else {
+          free_cow_vm(p->pgdir);
+        }
         p->state = UNUSED;
         p->pid = 0;
         p->parent = 0;

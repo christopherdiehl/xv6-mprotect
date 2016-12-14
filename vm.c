@@ -15,7 +15,7 @@ struct segdesc gdt[NSEGS];
 
 // //Handle Page Table entries
 struct {
-  int pte_array [TOTAL_NPENTRIES];
+  char pte_array [NPDENTRIES*NPTENTRIES];
   struct spinlock lock;
 } pte_lookup_table;
 
@@ -232,11 +232,12 @@ int
 mprotect(void *addr, int len, int prot)
 {
   pte_t *page_table_entry;
+  cprintf("*addr: %d\n",(uint)addr);
   //might need to PGRDWN the address
   //loop through all the page entries that need protection level changed
   //makes prot cnstants change in types.h
   //break it down, use PTE
-  cprintf("addr: %d\n",(int)addr);
+  // cprintf("addr: %d\n",(int)addr);
   uint base_addr = PGROUNDDOWN((uint)addr);
   uint curr = base_addr;
   do {
@@ -244,7 +245,7 @@ mprotect(void *addr, int len, int prot)
     page_table_entry = walkpgdir(proc->pgdir,(void *)curr ,0);
     curr += PGSIZE;
     //clear last 3 bits
-    // cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
+    cprintf("page table entry before: 0x%x desireced prot = %d\n",*page_table_entry,prot);
     //clear last 3 bits
     *page_table_entry &= 0xfffffff9;
     // cprintf("page table entry after clear: 0x%x\n",*page_table_entry);
@@ -261,7 +262,7 @@ mprotect(void *addr, int len, int prot)
       case PROT_READ | PROT_WRITE:
         *page_table_entry |= (PTE_P | PTE_W | PTE_U);
     }
-    // cprintf("page table entry after: 0x%x\n",*page_table_entry);
+    cprintf("page table entry after: 0x%x\n",*page_table_entry);
   } while(curr < ((uint)addr +len));
 
   //flush that tlb real good
@@ -317,11 +318,23 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       a += (NPTENTRIES - 1) * PGSIZE;
     else if((*pte & PTE_P) != 0){
       pa = PTE_ADDR(*pte);
-      if(pa == 0)
-        panic("kfree");
-      char *v = p2v(pa);
-      kfree(v);
-      *pte = 0;
+      acquire(&pte_lookup_table.lock);
+        if(pte_lookup_table.pte_array[pa/PGSIZE] < 2){
+          if(pa == 0) {
+            release(&pte_lookup_table.lock);
+            panic("kfree");
+          }
+          char *v = p2v(pa);
+          kfree(v);
+          *pte = 0;
+        } else if(pte_lookup_table.pte_array[pa/PGSIZE] == 2) { //need to decrement and make mem writable
+          *pte |= PTE_W; //you may now write
+          pte_lookup_table.pte_array[pa/PGSIZE] = 1;
+        } else {
+          pte_lookup_table.pte_array[pa/PGSIZE]--;
+        }
+      release(&pte_lookup_table.lock);
+      //need to update entries in page table here
     }
   }
   return newsz;
@@ -344,6 +357,33 @@ freevm(pde_t *pgdir)
     }
   }
   kfree((char*)pgdir);
+}
+
+// Free a page table and all the physical memory pages
+// in the user part.
+void
+free_cow_vm(pde_t *pgdir)
+{
+
+  if(pgdir == 0)
+    panic("freevm: no pgdir");
+  deallocuvm(pgdir, KERNBASE, 0);
+  uint pa,i;
+  acquire(&pte_lookup_table.lock); //need to add for exec
+  for(i = 0; i < NPDENTRIES; i++) {
+    if(pgdir[i] & PTE_P){
+      pa = PTE_ADDR(pgdir[i]);
+      if(pte_lookup_table.pte_array[pa/PGSIZE] < 2) {
+        char * v = p2v(PTE_ADDR(pgdir[i]));
+        kfree(v);
+      }
+    }
+  }
+  // if(pte_lookup_table.pte_array[pa/PGSIZE] < 2) {
+  //   kfree((char*)pgdir);
+  // }
+  release(&pte_lookup_table.lock);
+
 }
 
 // Clear PTE_U on a page. Used to create an inaccessible
@@ -390,7 +430,58 @@ bad:
   freevm(d);
   return 0;
 }
+void handle_cow_fault(uint addr) {
+  //addr = PGROUNDDOWN(addr); //get page starting point
+  uint  pa;
+  pte_t *pte;
+  char *mem;
+  if(proc == 0) { //shouldn't happen
+    cprintf("YOU SENT ME A BROKEN PROC IN HANDLE_COW!\n YOU DIRTY COW YOU\n");
+    panic("handle_cow_fault: proc should exist");
+  } else if (addr >= KERNBASE) {
+    panic("handle_cow_fault: given kernel level address\n");
+    proc->killed = 1; //kill all those who appose my kernel
+  }
+  pte = walkpgdir(proc->pgdir,(void*)addr,0);
+  if(pte == 0) {
+    panic("handle_cow_fault: invalid memory addresss given");
+  } else if (*pte & PTE_W) {
+    panic("handle_cow_fault: page memory already writable. PGFAULT out of my hooves");
+  }
 
+  pa = PTE_ADDR(*pte);
+  acquire(&pte_lookup_table.lock);
+    if(pte_lookup_table.pte_array[pa/PGSIZE] == 0) { //page fault
+      release(&pte_lookup_table.lock);
+      cprintf("cowfork_handle_fault: process not shared\n");
+      panic("cowfork: process not shared");
+    } else if(pte_lookup_table.pte_array[pa/PGSIZE == 1]) {
+      *pte |= PTE_W; //good to give the process access to the existing page table
+      pte_lookup_table.pte_array[pa/PGSIZE]--;
+    } else {
+      pte_lookup_table.pte_array[pa/PGSIZE]--;
+      /* Taken directly from copyuvm*/
+      pa = PTE_ADDR(*pte);
+    //  flags = PTE_FLAGS(*pte);
+      if((mem = kalloc()) == 0) {
+        release(&pte_lookup_table.lock);
+        cprintf("kalloc failed?\n");
+        goto bad;
+      }
+      memmove(mem, (char*)p2v(pa), PGSIZE);
+      // if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+      //   goto bad; should already be mapped. Not sure though- Double check
+      *pte = v2p(mem) | PTE_P | PTE_U | PTE_W;
+    }
+  release(&pte_lookup_table.lock);
+
+  //flush that tlb
+  lcr3(v2p(proc->pgdir));
+  return;
+bad:
+  cprintf("cowfork handle fault: bad things happened\n");
+  panic("cowfork handle fault: bad things happened");
+}
 // Given a parent process's page table, create a copy
 // of it for a child.
 pde_t*
@@ -412,13 +503,29 @@ copyuvm_cow(pde_t *pgdir, uint sz)
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
       goto bad;
-    memmove(mem, (char*)p2v(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+    acquire(&pte_lookup_table.lock);
+      if(pte_lookup_table.pte_array[pa/PGSIZE] == 0) { //page fault
+        pte_lookup_table.pte_array[pa/PGSIZE] = 2; //now child + father fork are pointing at it
+      } else {
+        pte_lookup_table.pte_array[pa/PGSIZE] += 1;
+
+      }
+    release(&pte_lookup_table.lock);
+
+    if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) //dont make new pages
       goto bad;
+    //make it write only
+    // cprintf("ABOUT TO MPROTECT\n");
+    // mprotect(&pte,PGSIZE,PROT_READ);
+    *pte &= ~PTE_W;
+
   }
+  //flush tlb?
+  lcr3(v2p(pgdir));
   return d;
 
 bad:
+  cprintf("BAD MEMORY!\n");
   freevm(d);
   return 0;
 }
