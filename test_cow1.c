@@ -18,14 +18,16 @@ int main(void)
     if (cowfork() == 0){
       //t2 = 5;
     //  printf(1,"t2 = %d\n",t2);
-     // *temp = 5;
-      printf(1,"I AM A CHILD! %d \n",*temp);
+      t1= 20;
+      printf(1,"I AM A CHILD! %d \n",t1);
       exit();
     } else{
     //  t1 = 7;
     //  printf(1,"t1 = %d\n",t1);
-      printf(1,"I am the father!\n");
+      printf(1,"I am the father t1 = %d!\n",t1);
       wait();
+      printf(1,"I am the father t1 = %d!\n",t1);
+
       exit();
     }
 }

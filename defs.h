@@ -169,6 +169,7 @@ void            uartintr(void);
 void            uartputc(int);
 
 // vm.c
+void            handle_cow_fault(uint);
 pde_t*          copyuvm_cow(pde_t*, uint);
 void            init_pte_lookup_lock(void);
 void            seginit(void);

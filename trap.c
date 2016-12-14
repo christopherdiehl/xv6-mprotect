@@ -91,10 +91,8 @@ trap(struct trapframe *tf)
      // cprintf(" PAGEFULT !! SHARED = %d\n",proc->shared);
 
       if(proc->shared == 1) {
-       cprintf("DO SOMETHING!\n");
-
+         handle_cow_fault(rcr2());
       } else if (proc->handlers[SIGSEGV] != (sighandler_t) -1) {
-        cprintf("WHY IS THIS HAPPENING?\n");
         int err = tf->err;
         if(err == 0x4 || err == 0x6 || err == 0x5) {
           si.type = PROT_NONE;
@@ -107,7 +105,7 @@ trap(struct trapframe *tf)
         // cprintf(" PAGE FAULT addr: 0x%x addrtype: 0x%x\n",si.addr,si.type);
         signal_deliver(SIGSEGV,si);
         break;
-      } 
+      }
       break;
 
   //PAGEBREAK: 13

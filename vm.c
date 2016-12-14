@@ -328,11 +328,9 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
           kfree(v);
           *pte = 0;
         } else if(pte_lookup_table.pte_array[pa/PGSIZE] == 2) { //need to decrement and make mem writable
-          cprintf("I AM TRYING TO DEALLOCATE SECOND MEM WITH 2 POINTERS\n");
           *pte |= PTE_W; //you may now write
           pte_lookup_table.pte_array[pa/PGSIZE] = 1;
         } else {
-          cprintf("DEALLOC ELSE? \n");
           pte_lookup_table.pte_array[pa/PGSIZE]--;
         }
       release(&pte_lookup_table.lock);
@@ -370,6 +368,22 @@ free_cow_vm(pde_t *pgdir)
   if(pgdir == 0)
     panic("freevm: no pgdir");
   deallocuvm(pgdir, KERNBASE, 0);
+  uint pa,i;
+  acquire(&pte_lookup_table.lock); //need to add for exec
+  for(i = 0; i < NPDENTRIES; i++) {
+    if(pgdir[i] & PTE_P){
+      pa = PTE_ADDR(pgdir[i]);
+      if(pte_lookup_table.pte_array[pa/PGSIZE] < 2) {
+        char * v = p2v(PTE_ADDR(pgdir[i]));
+        kfree(v);
+      }
+    }
+  }
+  // if(pte_lookup_table.pte_array[pa/PGSIZE] < 2) {
+  //   kfree((char*)pgdir);
+  // }
+  release(&pte_lookup_table.lock);
+
 }
 
 // Clear PTE_U on a page. Used to create an inaccessible
@@ -416,7 +430,58 @@ bad:
   freevm(d);
   return 0;
 }
+void handle_cow_fault(uint addr) {
+  //addr = PGROUNDDOWN(addr); //get page starting point
+  uint  pa;
+  pte_t *pte;
+  char *mem;
+  if(proc == 0) { //shouldn't happen
+    cprintf("YOU SENT ME A BROKEN PROC IN HANDLE_COW!\n YOU DIRTY COW YOU\n");
+    panic("handle_cow_fault: proc should exist");
+  } else if (addr >= KERNBASE) {
+    panic("handle_cow_fault: given kernel level address\n");
+    proc->killed = 1; //kill all those who appose my kernel
+  }
+  pte = walkpgdir(proc->pgdir,(void*)addr,0);
+  if(pte == 0) {
+    panic("handle_cow_fault: invalid memory addresss given");
+  } else if (*pte & PTE_W) {
+    panic("handle_cow_fault: page memory already writable. PGFAULT out of my hooves");
+  }
 
+  pa = PTE_ADDR(*pte);
+  acquire(&pte_lookup_table.lock);
+    if(pte_lookup_table.pte_array[pa/PGSIZE] == 0) { //page fault
+      release(&pte_lookup_table.lock);
+      cprintf("cowfork_handle_fault: process not shared\n");
+      panic("cowfork: process not shared");
+    } else if(pte_lookup_table.pte_array[pa/PGSIZE == 1]) {
+      *pte |= PTE_W; //good to give the process access to the existing page table
+      pte_lookup_table.pte_array[pa/PGSIZE]--;
+    } else {
+      pte_lookup_table.pte_array[pa/PGSIZE]--;
+      /* Taken directly from copyuvm*/
+      pa = PTE_ADDR(*pte);
+    //  flags = PTE_FLAGS(*pte);
+      if((mem = kalloc()) == 0) {
+        release(&pte_lookup_table.lock);
+        cprintf("kalloc failed?\n");
+        goto bad;
+      }
+      memmove(mem, (char*)p2v(pa), PGSIZE);
+      // if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+      //   goto bad; should already be mapped. Not sure though- Double check
+      *pte = v2p(mem) | PTE_P | PTE_U | PTE_W;
+    }
+  release(&pte_lookup_table.lock);
+
+  //flush that tlb
+  lcr3(v2p(proc->pgdir));
+  return;
+bad:
+  cprintf("cowfork handle fault: bad things happened\n");
+  panic("cowfork handle fault: bad things happened");
+}
 // Given a parent process's page table, create a copy
 // of it for a child.
 pde_t*
@@ -440,7 +505,6 @@ copyuvm_cow(pde_t *pgdir, uint sz)
       goto bad;
     acquire(&pte_lookup_table.lock);
       if(pte_lookup_table.pte_array[pa/PGSIZE] == 0) { //page fault
-        cprintf("ITS TWO!\n");
         pte_lookup_table.pte_array[pa/PGSIZE] = 2; //now child + father fork are pointing at it
       } else {
         pte_lookup_table.pte_array[pa/PGSIZE] += 1;
@@ -458,7 +522,6 @@ copyuvm_cow(pde_t *pgdir, uint sz)
   }
   //flush tlb?
   lcr3(v2p(pgdir));
-  cprintf("FINISHED IN COW!\n");
   return d;
 
 bad:
